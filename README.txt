@@ -1,36 +1,25 @@
 # Ubuntu 26.04.1 LTS
 
-> **Autoinstall + Packer + Vagrant + VirtualBox**
+**Autoinstall + Packer + Vagrant + VirtualBox**
 
-Automated Ubuntu Server VM deployment using Packer, Ubuntu Autoinstall, Vagrant, and VirtualBox.
-
----
+Automated Ubuntu Server deployment using Packer, Ubuntu Autoinstall, Vagrant and VirtualBox.
 
 ## Requirements
 
-Before starting, install:
-
-- **Oracle VirtualBox**
-- **HashiCorp Packer**
-- **HashiCorp Vagrant**
-
----
+- Oracle VirtualBox
+- HashiCorp Packer
+- HashiCorp Vagrant
 
 ## Automatic deployment
 
-Allow PowerShell script execution for the current session:
+Run PowerShell:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-```
-
-Run the deployment script:
-
-```powershell
 .\deploy.ps1
 ```
 
-### What `deploy.ps1` does
+## What `deploy.ps1` does
 
 1. Packer downloads the Ubuntu 26.04.1 Server ISO.
 2. Ubuntu is installed automatically using Autoinstall.
@@ -38,45 +27,39 @@ Run the deployment script:
 4. The box is added to Vagrant.
 5. Vagrant creates and starts the VirtualBox VM.
 
----
-
 ## Manual Packer build
 
-### Initialize Packer plugins
+Initialize Packer plugins:
 
 ```powershell
 packer init .
 ```
 
-### Validate configuration
+Validate configuration:
 
 ```powershell
 packer validate .
 ```
 
-### Build Ubuntu box
+Build Ubuntu box:
 
 ```powershell
 packer build .
 ```
 
----
-
 ## Manual Vagrant setup
 
-### Add the generated box
+Add the generated box:
 
 ```powershell
 vagrant box add --name <box-name> .\builds\<box-file>.box
 ```
 
-If a box with the same name already exists and needs to be replaced:
+If the box already exists and needs to be replaced:
 
 ```powershell
 vagrant box add --force --name <box-name> .\builds\<box-file>.box
 ```
-
----
 
 ## Start VM
 
@@ -84,53 +67,47 @@ vagrant box add --force --name <box-name> .\builds\<box-file>.box
 vagrant up
 ```
 
----
-
 ## Connect to VM
 
 ```powershell
 vagrant ssh
 ```
 
----
-
 ## VM management
 
-### Stop VM
+Stop VM:
 
 ```powershell
 vagrant halt
 ```
 
-### Restart VM
+Restart VM:
 
 ```powershell
 vagrant reload
 ```
 
-### Destroy VM
+Destroy VM:
 
 ```powershell
 vagrant destroy -f
 ```
 
-### Check VM status
+Check VM status:
 
 ```powershell
 vagrant status
 ```
 
----
-
 ## Vagrant box management
 
-### List installed boxes
+List installed boxes:
 
 ```powershell
 vagrant box list
 ```
 
-### Remove cached box
+Remove cached box:
 
 ```powershell
 vagrant box remove <box-name>
