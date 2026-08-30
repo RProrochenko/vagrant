@@ -1,0 +1,33 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: en_US.UTF-8
+
+  keyboard:
+    layout: us
+
+  timezone: Europe/Kyiv
+
+  identity:
+    hostname: ubuntu-vagrant
+    username: rpr
+    password: '$6$rounds=4096$VAGRANTrpr$pwXCc5GUp2YbZ8.FbGIUzzaE9PbQ2j2XDZr1WtMHdY3p4go0RAM8n4OEM2DhQXLKWLYKxu63C72bHxH6k11su1'
+
+  ssh:
+    install-server: true
+    allow-pw: true
+
+  storage:
+    layout:
+      name: direct
+
+  packages:
+    - openssh-server
+    - curl
+    - git
+
+  late-commands:
+    - curtin in-target --target=/target -- usermod -aG sudo rpr
+    - curtin in-target --target=/target -- bash -c "echo 'rpr ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/rpr"
+    - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/rpr

@@ -1,0 +1,48 @@
+*.exe
+
+# Packer build artifacts
+builds/
+*.box
+
+# Packer cache
+packer_cache/
+.packer.d/
+
+# Vagrant
+.vagrant/
+
+# VirtualBox
+*.vdi
+*.vmdk
+*.vbox
+*.vbox-prev
+*.sav
+*.log
+
+# Terraform/Packer temporary files
+*.tmp
+*.bak
+*.lock
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# PowerShell temp/history
+*.ps1~
+*.ps1.bak
+
+# Secrets / local overrides
+*.env
+.env
+.env.*
+secrets/
+credentials/
