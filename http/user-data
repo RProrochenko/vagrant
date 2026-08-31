@@ -24,10 +24,8 @@ autoinstall:
 
   packages:
     - openssh-server
-    - curl
-    - git
 
   late-commands:
-    - curtin in-target --target=/target -- usermod -aG sudo rpr
-    - curtin in-target --target=/target -- bash -c "echo 'rpr ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/rpr"
-    - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/rpr
+    - curtin in-target --target=/target -- usermod -aG sudo user
+    - curtin in-target --target=/target -- bash -c "echo 'user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/user"
+    - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/user

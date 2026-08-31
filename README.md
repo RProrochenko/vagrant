@@ -10,6 +10,29 @@ Automated Ubuntu Server deployment using Packer, Ubuntu Autoinstall, Vagrant and
 - HashiCorp Packer
 - HashiCorp Vagrant
 
+## Configuration
+
+Vagrant box name:
+
+```text
+ubuntu-26.04-rpr-virtualbox
+```
+
+Generated box file:
+
+```text
+.\builds\ubuntu-26.04-rpr-virtualbox.box
+```
+
+Default lab credentials:
+
+```text
+Login: user
+Password: 1
+```
+
+> The default password is intended only for an isolated lab environment.
+
 ## Automatic deployment
 
 Run PowerShell:
@@ -21,11 +44,12 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 ## What `deploy.ps1` does
 
-1. Packer downloads the Ubuntu 26.04.1 Server ISO.
-2. Ubuntu is installed automatically using Autoinstall.
-3. Packer creates a Vagrant box file in the `builds` directory.
-4. The box is added to Vagrant.
-5. Vagrant creates and starts the VirtualBox VM.
+1. Checks that Packer, Vagrant and VirtualBox are installed.
+2. Checks whether the Vagrant box `ubuntu-26.04-rpr-virtualbox` already exists.
+3. If it does not exist, Packer downloads Ubuntu Server 26.04.1 and installs it using Autoinstall.
+4. Packer creates `.\builds\ubuntu-26.04-rpr-virtualbox.box`.
+5. The box is added to Vagrant.
+6. Vagrant creates and starts the VirtualBox VM.
 
 ## Manual Packer build
 
@@ -52,13 +76,13 @@ packer build .
 Add the generated box:
 
 ```powershell
-vagrant box add --name <box-name> .\builds\<box-file>.box
+vagrant box add --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
 ```
 
 If the box already exists and needs to be replaced:
 
 ```powershell
-vagrant box add --force --name <box-name> .\builds\<box-file>.box
+vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
 ```
 
 ## Start VM
@@ -99,6 +123,18 @@ Check VM status:
 vagrant status
 ```
 
+## Clean rebuild after changing Packer or Autoinstall configuration
+
+`deploy.ps1` skips the Packer build when the box is already installed locally.
+To guarantee that configuration changes are included in a new VM:
+
+```powershell
+vagrant destroy -f
+vagrant box remove ubuntu-26.04-rpr-virtualbox --force
+Remove-Item -Recurse -Force .\builds -ErrorAction SilentlyContinue
+.\deploy.ps1
+```
+
 ## Vagrant box management
 
 List installed boxes:
@@ -110,5 +146,5 @@ vagrant box list
 Remove cached box:
 
 ```powershell
-vagrant box remove <box-name>
+vagrant box remove ubuntu-26.04-rpr-virtualbox
 ```

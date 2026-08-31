@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-$BoxName = "ubuntu-autoinstall-rpr"
-$BoxFile = ".\builds\ubuntu-24.04.4-virtualbox.box"
+$BoxName = "ubuntu-26.04-rpr-virtualbox"
+$BoxFile = ".\builds\ubuntu-26.04-rpr-virtualbox.box"
 
 Write-Host "Checking required commands..."
 
