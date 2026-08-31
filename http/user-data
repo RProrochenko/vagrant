@@ -11,7 +11,7 @@ autoinstall:
 
   identity:
     hostname: ubuntu-vagrant
-    username: rpr
+    username: user
     password: '$6$rounds=4096$VAGRANTrpr$pwXCc5GUp2YbZ8.FbGIUzzaE9PbQ2j2XDZr1WtMHdY3p4go0RAM8n4OEM2DhQXLKWLYKxu63C72bHxH6k11su1'
 
   ssh:

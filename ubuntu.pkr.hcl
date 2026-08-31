@@ -47,8 +47,8 @@ build {
 
   provisioner "shell" {
     inline = [
-      "echo 'rpr ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/rpr",
-      "sudo chmod 440 /etc/sudoers.d/rpr",
+      "echo 'user ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/user",
+      "sudo chmod 440 /etc/sudoers.d/user",
       "sudo apt-get update",
       "sudo apt-get install -y curl git vim htop net-tools ca-certificates",
       "sudo apt-get clean"
