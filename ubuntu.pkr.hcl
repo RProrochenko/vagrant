@@ -40,7 +40,7 @@ source "virtualbox-iso" "ubuntu" {
     "boot<enter>"
   ]
 
-  shutdown_command = "echo '1' | sudo -S shutdown -P now"
+  shutdown_command = "sudo shutdown -P now"
 }
 
 build {

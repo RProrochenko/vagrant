@@ -2,7 +2,7 @@
 
 **Autoinstall + Packer + Vagrant + VirtualBox**
 
-Automated Ubuntu Server deployment using Packer, Ubuntu Autoinstall, Vagrant and VirtualBox.
+Ubuntu Server image built with Packer and Autoinstall, then started with Vagrant and VirtualBox.
 
 ## Requirements
 
@@ -33,63 +33,23 @@ Password: vagrant
 
 > The default password is intended only for an isolated lab environment.
 
-## Automatic deployment
+## Build and start
 
-Run PowerShell:
-
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\deploy.ps1
-```
-
-## What `deploy.ps1` does
-
-1. Checks that Packer, Vagrant and VirtualBox are installed.
-2. Checks whether the Vagrant box `ubuntu-26.04-rpr-virtualbox` already exists.
-3. If it does not exist, Packer downloads Ubuntu Server 26.04.1 and installs it using Autoinstall.
-4. Packer creates `.\builds\ubuntu-26.04-rpr-virtualbox.box`.
-5. The box is added to Vagrant.
-6. Vagrant creates and starts the VirtualBox VM.
-
-## Manual Packer build
-
-Initialize Packer plugins:
+Run the following commands from the project root in PowerShell:
 
 ```powershell
-packer init .
-```
+New-Item -ItemType Directory -Force .\builds | Out-Null
 
-Validate configuration:
+.\packer.exe init .
+.\packer.exe validate .
+.\packer.exe build -force .
 
-```powershell
-packer validate .
-```
-
-Build Ubuntu box:
-
-```powershell
-packer build .
-```
-
-## Manual Vagrant setup
-
-Add the generated box:
-
-```powershell
-vagrant box add --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
-```
-
-If the box already exists and needs to be replaced:
-
-```powershell
 vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
+vagrant up --provider virtualbox
 ```
 
-## Start VM
-
-```powershell
-vagrant up
-```
+The commands use the bundled `.\packer.exe`. If Packer is installed in `PATH`,
+`packer` can be used instead.
 
 ## Connect to VM
 
@@ -125,15 +85,23 @@ vagrant status
 
 ## Clean rebuild after changing Packer or Autoinstall configuration
 
-`deploy.ps1` skips the Packer build when the box is already installed locally.
-To guarantee that configuration changes are included in a new VM:
+Build the new box first. Only after Packer finishes successfully, destroy the old
+VM, replace the registered box, and create a new VM:
 
 ```powershell
+New-Item -ItemType Directory -Force .\builds | Out-Null
+
+.\packer.exe init .
+.\packer.exe validate .
+.\packer.exe build -force .
+
 vagrant destroy -f
-vagrant box remove ubuntu-26.04-rpr-virtualbox --force
-Remove-Item -Recurse -Force .\builds -ErrorAction SilentlyContinue
-.\deploy.ps1
+vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
+vagrant up --provider virtualbox
 ```
+
+> `vagrant destroy -f` permanently deletes the current project VM. Back up any
+> required data before running the clean rebuild.
 
 ## Vagrant box management
 
