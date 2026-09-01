@@ -26,6 +26,7 @@ autoinstall:
     - openssh-server
 
   late-commands:
+    - curtin in-target --target=/target -- bash -c "echo 'user:vagrant' | chpasswd"
     - curtin in-target --target=/target -- usermod -aG sudo user
     - curtin in-target --target=/target -- bash -c "echo 'user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/user"
     - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/user

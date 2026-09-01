@@ -28,7 +28,7 @@ Default lab credentials:
 
 ```text
 Login: user
-Password: 1
+Password: vagrant
 ```
 
 > The default password is intended only for an isolated lab environment.

@@ -27,7 +27,7 @@ source "virtualbox-iso" "ubuntu" {
   http_directory = "http"
 
   ssh_username = "user"
-  ssh_password = "1"
+  ssh_password = "vagrant"
   ssh_timeout  = "30m"
 
   boot_wait = "5s"

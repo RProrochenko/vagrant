@@ -9,11 +9,12 @@ Vagrant.configure("2") do |config|
   end
 
   config.ssh.username = "user"
-  config.ssh.password = "1"
+  config.ssh.password = "vagrant"
   config.ssh.insert_key = false
 
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
     apt-get install -y curl wget git vim htop jq unzip
+	curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
   SHELL
 end
