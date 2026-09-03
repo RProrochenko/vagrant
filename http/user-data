@@ -10,25 +10,21 @@ autoinstall:
   timezone: Europe/Kyiv
 
   identity:
-    hostname: ubuntu-vagrant
+    hostname: ubuntu-rprorochenko
     username: user
     password: '$6$rounds=4096$VAGRANTuser$FQr.uHVzF/9FGEkMLZrOkogAuidujs4RVzjTIIBemT36T8AFsOgvmp3PhuGOC.iITEmDrK504wThkl7KB2kEC0'
 
   ssh:
     install-server: true
-    allow-pw: true
+    authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPGYBOCLwK5b+Kte0D1oIKAdW0b1/laUgS6pNnMczknx
+    allow-pw: false
 
   storage:
     layout:
       name: direct
 
-  packages:
-    - openssh-server
-
   late-commands:
-    - curtin in-target --target=/target -- bash -c "printf '%s\\n' 'user:vagrant' | chpasswd"
-    - curtin in-target --target=/target -- passwd -u user
-    - curtin in-target --target=/target -- usermod -s /bin/bash -aG sudo user
-    - curtin in-target --target=/target -- bash -c "printf '%s\\n' 'PasswordAuthentication yes' 'KbdInteractiveAuthentication yes' 'UsePAM yes' > /etc/ssh/sshd_config.d/99-vagrant-password.conf"
     - curtin in-target --target=/target -- bash -c "printf '%s\\n' 'user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/user"
     - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/user
+    - curtin in-target --target=/target -- visudo -cf /etc/sudoers.d/user

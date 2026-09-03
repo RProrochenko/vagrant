@@ -1,0 +1,4 @@
+Vagrantfile text eol=lf
+*.pkr.hcl text eol=lf
+ssh/private-key -text
+ssh/private-key.pub text eol=lf

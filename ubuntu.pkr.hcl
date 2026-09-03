@@ -12,7 +12,7 @@ packer {
 }
 
 source "virtualbox-iso" "ubuntu" {
-  vm_name       = "ubuntu-26.04-rpr-base"
+  vm_name       = "ubuntu-26.04-rprorochenko-base"
   guest_os_type = "Ubuntu_64"
 
   iso_url      = "https://releases.ubuntu.com/26.04.1/ubuntu-26.04.1-live-server-amd64.iso"
@@ -27,7 +27,7 @@ source "virtualbox-iso" "ubuntu" {
   http_directory = "http"
 
   ssh_username = "user"
-  ssh_password = "vagrant"
+  ssh_private_key_file = "C:/git/vagrant/ssh/private-key"
   ssh_timeout  = "30m"
 
   boot_wait = "5s"
@@ -49,7 +49,11 @@ build {
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
-      "sudo apt-get install -y curl git vim htop net-tools ca-certificates",
+      "curl -fsSL https://get.docker.com -o /tmp/get-docker.sh",
+      "sudo sh /tmp/get-docker.sh",
+      "rm -f /tmp/get-docker.sh",
+      "sudo apt-get install -y tree unzip virtualbox-guest-utils zip",
+      "sudo usermod -aG docker user",
       "sudo apt-get clean"
     ]
   }

@@ -1,97 +1,107 @@
-# Ubuntu 26.04.1 LTS
+# Ubuntu 26.04.1 LTS Vagrant Box
 
 **Autoinstall + Packer + Vagrant + VirtualBox**
 
-Ubuntu Server image built with Packer and Autoinstall, then started with Vagrant and VirtualBox.
+Локальний Ubuntu Server dev-box. Packer автоматично встановлює Ubuntu 26.04.1, Docker, Docker Compose, VirtualBox Guest Utilities та базові CLI-утиліти. Доступ до VM налаштовано через SSH key.
 
-## Requirements
+## Вимоги
 
 - Oracle VirtualBox
 - HashiCorp Packer
 - HashiCorp Vagrant
 
-## Configuration
+## SSH key
 
-Vagrant box name:
+Проєкт містить SSH key pair:
 
 ```text
-ubuntu-26.04-rpr-virtualbox
+ssh/private-key
+ssh/private-key.pub
 ```
 
-Generated box file:
+- `private-key` використовують Packer і Vagrant.
+- `private-key.pub` додано до `http/user-data` → `ssh.authorized-keys`.
+- SSH password authentication вимкнена.
+
+Щоб створити нову пару ключів:
+
+```powershell
+ssh-keygen -t ed25519 -f .\ssh\private-key -C "packer-vagrant"
+```
+
+Після генерації скопіюй public key:
+
+```powershell
+Get-Content .\ssh\private-key.pub
+```
+
+і заміни ним значення в `http/user-data`.
+
+> Private key дає доступ до VM, створених із цього box. Репозиторій має бути приватним.
+
+## Build
+
+Виконувати з кореня проєкту:
+
+```powershell
+New-Item -ItemType Directory -Force .\builds | Out-Null
+
+.\packer.exe init .
+.\packer.exe fmt .
+.\packer.exe validate .
+.\packer.exe build -force .
+```
+
+Готовий box:
 
 ```text
 .\builds\ubuntu-26.04-rpr-virtualbox.box
 ```
 
-Default lab credentials:
+> `ubuntu.pkr.hcl` зараз використовує шлях `C:/git/vagrant/ssh/private-key`. Якщо проєкт перенесено, онови `ssh_private_key_file`.
 
-```text
-Login: user
-Password: vagrant
+## Vagrant
+
+`Vagrantfile` має використовувати SSH key:
+
+```ruby
+config.ssh.username = "user"
+config.ssh.private_key_path = ["C:/git/vagrant/ssh/private-key"]
+config.ssh.insert_key = false
 ```
 
-> The default password is intended only for an isolated lab environment.
-
-## Build and start
-
-Run the following commands from the project root in PowerShell:
+Додати box і запустити VM:
 
 ```powershell
-New-Item -ItemType Directory -Force .\builds | Out-Null
-
-.\packer.exe init .
-.\packer.exe validate .
-.\packer.exe build -force .
-
 vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
 vagrant up --provider virtualbox
 ```
 
-The commands use the bundled `.\packer.exe`. If Packer is installed in `PATH`,
-`packer` can be used instead.
+Docker уже встановлюється під час Packer build, тому Docker-provisioner у `Vagrantfile` не потрібен.
 
-## Connect to VM
+## Шпаргалка
 
 ```powershell
 vagrant ssh
-```
-
-## VM management
-
-Stop VM:
-
-```powershell
+vagrant status
 vagrant halt
-```
-
-Restart VM:
-
-```powershell
 vagrant reload
-```
-
-Destroy VM:
-
-```powershell
 vagrant destroy -f
 ```
 
-Check VM status:
+Перевірити компоненти у VM:
 
 ```powershell
-vagrant status
+vagrant ssh -c "docker --version"
+vagrant ssh -c "docker compose version"
+vagrant ssh -c "id && groups"
 ```
 
-## Clean rebuild after changing Packer or Autoinstall configuration
+## Повний rebuild
 
-Build the new box first. Only after Packer finishes successfully, destroy the old
-VM, replace the registered box, and create a new VM:
+Після зміни `ubuntu.pkr.hcl` або `http/user-data`:
 
 ```powershell
-New-Item -ItemType Directory -Force .\builds | Out-Null
-
-.\packer.exe init .
 .\packer.exe validate .
 .\packer.exe build -force .
 
@@ -100,19 +110,12 @@ vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04
 vagrant up --provider virtualbox
 ```
 
-> `vagrant destroy -f` permanently deletes the current project VM. Back up any
-> required data before running the clean rebuild.
+> `vagrant destroy -f` безповоротно видаляє поточну VM.
 
-## Vagrant box management
-
-List installed boxes:
+## Діагностика
 
 ```powershell
-vagrant box list
-```
-
-Remove cached box:
-
-```powershell
-vagrant box remove ubuntu-26.04-rpr-virtualbox
+.\packer.exe validate .
+.\packer.exe build -debug .
+vagrant global-status
 ```

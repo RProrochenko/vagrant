@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y curl wget git vim htop jq unzip
-	curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+    apt-get install -y curl wget git vim htop jq unzip virtualbox-guest-utils
+	curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
   SHELL
 end
