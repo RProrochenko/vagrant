@@ -1,121 +1,110 @@
-# Ubuntu 26.04.1 LTS Vagrant Box
+# Vagrant lab: Ubuntu 26.04 та Rocky Linux 10
 
-**Autoinstall + Packer + Vagrant + VirtualBox**
-
-Локальний Ubuntu Server dev-box. Packer автоматично встановлює Ubuntu 26.04.1, Docker, Docker Compose, VirtualBox Guest Utilities та базові CLI-утиліти. Доступ до VM налаштовано через SSH key.
+Проєкт створює локальні Vagrant box для VirtualBox і запускає одну або кілька VM.
+Шаблони ОС та динамічні налаштування VM зберігаються окремо.
 
 ## Вимоги
 
-- Oracle VirtualBox
-- HashiCorp Packer
-- HashiCorp Vagrant
+- Oracle VirtualBox;
+- HashiCorp Vagrant;
+- HashiCorp Packer — лише для побудови box.
 
-## SSH key
+## Конфігурація
 
-Проєкт містить SSH key pair:
+Статичні шаблони ОС:
 
-```text
-ssh/private-key
-ssh/private-key.pub
-```
+- `config/os/ubuntu26.json` — guest OS, communicator, ISO, checksum і розмір диска Ubuntu;
+- `config/os/rocky10.json` — guest OS, communicator, ISO, checksum і розмір диска Rocky.
 
-- `private-key` використовують Packer і Vagrant.
-- `private-key.pub` додано до `http/user-data` → `ssh.authorized-keys`.
-- SSH password authentication вимкнена.
+Динамічні конфігурації, один файл на VM:
 
-Щоб створити нову пару ключів:
+- `config/machines/ubuntu26.json` — VM `ubuntu26` на Ubuntu;
+- `config/machines/rocky10.json` — VM `rocky` на Rocky.
 
-```powershell
-ssh-keygen -t ed25519 -f .\ssh\private-key -C "packer-vagrant"
-```
+Кожна конфігурація VM містить усі змінні параметри: `name`, `hostname`, `ssh`,
+ресурси box і build, `autostart`, `primary`, `synced_folder` та `provision`.
+`ssh.username`, шляхи до ключів і `insert_key` застосовуються одночасно до
+Packer, installer та Vagrant. У `provision.packages` задано додаткові пакети,
+а `provision.install_docker` керує встановленням Docker. Щоб додати VM,
+скопіюй файл із `config/machines/`, задай унікальні `name` і `hostname`,
+а в `os` вкажи наявний шаблон ОС.
 
-Після генерації скопіюй public key:
+Стандартна VM — `ubuntu26` з Ubuntu, 4 CPU та 8192 MiB RAM. Щоб застосувати
+нові CPU/RAM до вже створеної VM, виконай `vagrant reload ubuntu26`.
 
-```powershell
-Get-Content .\ssh\private-key.pub
-```
-
-і заміни ним значення в `http/user-data`.
-
-> Private key дає доступ до VM, створених із цього box. Репозиторій має бути приватним.
-
-## Build
-
-Виконувати з кореня проєкту:
+Rocky VM уже описана у `config/machines/rocky10.json`, але має `autostart: false`.
+Щоб запустити її після побудови та імпорту box:
 
 ```powershell
-New-Item -ItemType Directory -Force .\builds | Out-Null
-
-.\packer.exe init .
-.\packer.exe fmt .
-.\packer.exe validate .
-.\packer.exe build -force .
+vagrant up rocky --provider virtualbox
 ```
 
-Готовий box:
+Для Rocky `synced_folder` вимкнено, оскільки його власний box не встановлює
+VirtualBox Guest Additions. Для Ubuntu спільна тека `/vagrant` увімкнена.
 
-```text
-.\builds\ubuntu-26.04-rpr-virtualbox.box
-```
+Явні `cpus` і `memory` у конкретній VM мають пріоритет над значеннями box.
+Поле `primary: true` дозволене лише для однієї VM.
 
-> `ubuntu.pkr.hcl` зараз використовує шлях `C:/git/vagrant/ssh/private-key`. Якщо проєкт перенесено, онови `ssh_private_key_file`.
+Ресурси `build.resources` належать лише Packer. Вони не впливають на VM після
+`vagrant up`: типово build використовує 2 CPU / 4096 MiB, тоді як Ubuntu VM —
+4 CPU / 8192 MiB. Це дає змогу збирати box без зайвого навантаження на хост.
 
-## Vagrant
-
-`Vagrantfile` має використовувати SSH key:
-
-```ruby
-config.ssh.username = "user"
-config.ssh.private_key_path = ["C:/git/vagrant/ssh/private-key"]
-config.ssh.insert_key = false
-```
-
-Додати box і запустити VM:
+## Запуск VM
 
 ```powershell
-vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
-vagrant up --provider virtualbox
-```
-
-Docker уже встановлюється під час Packer build, тому Docker-provisioner у `Vagrantfile` не потрібен.
-
-## Шпаргалка
-
-```powershell
-vagrant ssh
+vagrant validate
+vagrant up ubuntu26 --provider virtualbox
+vagrant ssh ubuntu26
 vagrant status
-vagrant halt
-vagrant reload
-vagrant destroy -f
 ```
 
-Перевірити компоненти у VM:
+Усі VM мають `autostart: false`, тому завжди вказуй їхні ідентифікатори:
+`vagrant up ubuntu26` або `vagrant up rocky`.
+
+## Побудова box
+
+`ubuntu26.pkr.hcl` генерує Ubuntu autoinstall із `http/user-data.pkrtpl.hcl`.
+`rocky10.pkr.hcl` генерує Kickstart із `http/rocky/rocky.ks.pkrtpl.hcl`.
+`build.ps1` спочатку пропонує вибрати VM-конфіг, а потім автоматично вибирає
+Packer-шаблон за полем `os`. Шаблон бере статичні параметри з `config/os/` та
+динамічні — з обраного файлу в `config/machines/`.
+`plugins.pkr.hcl` фіксує Packer 1.16.0, VirtualBox plugin 1.1.5 і Vagrant plugin
+1.1.7. Не змінюй ці версії без окремого тестування збірок.
 
 ```powershell
-vagrant ssh -c "docker --version"
-vagrant ssh -c "docker compose version"
-vagrant ssh -c "id && groups"
+.\build.ps1
 ```
 
-## Повний rebuild
+Скрипт показує доступні VM, виконує `packer init`, `packer validate` та
+`packer build -force`. Він лише створює `.box` у `builds/` і не імпортує його
+у Vagrant. Enter або `0` скасовують вибір без запуску збірки.
 
-Після зміни `ubuntu.pkr.hcl` або `http/user-data`:
+Можна запускати скрипт за повним шляхом. Якщо локальна Execution Policy блокує
+запуск, використай:
 
 ```powershell
-.\packer.exe validate .
-.\packer.exe build -force .
-
-vagrant destroy -f
-vagrant box add --force --name ubuntu-26.04-rpr-virtualbox .\builds\ubuntu-26.04-rpr-virtualbox.box
-vagrant up --provider virtualbox
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-> `vagrant destroy -f` безповоротно видаляє поточну VM.
+## SSH
 
-## Діагностика
+Параметри SSH задані в кожному файлі `config/machines/*.json`: `username`,
+`private_key_path`, `public_key_path` і `insert_key`. Packer підставляє username
+та public key у installer-шаблон під час build, тому після заміни ключа достатньо
+змінити шлях у VM-конфігу й перебудувати відповідний box.
 
-```powershell
-.\packer.exe validate .
-.\packer.exe build -debug .
-vagrant global-status
-```
+## Обмеження
+
+- Vagrant box має відповідати provider `virtualbox` та архітектурі хоста.
+- Оновлення box не змінює вже створені VM; протестуй новий box окремо перед
+  заміною робочого середовища.
+- ISO, checksum і Packer plugins завантажуються під час build, тому потрібен
+  доступ до інтернету.
+- Ubuntu ISO перевіряється за зафіксованим SHA-256. Для Rocky використовується
+  checksum-файл, прив'язаний до конкретного ISO, а не загальний `CHECKSUM`.
+
+## Документація
+
+- [Vagrant multi-machine](https://developer.hashicorp.com/vagrant/docs/multi-machine)
+- [Packer VirtualBox ISO builder](https://developer.hashicorp.com/packer/integrations/hashicorp/virtualbox/latest/components/builder/iso)
+- [Rocky Linux Kickstart](https://docs.rockylinux.org/guides/automation/kickstart/)

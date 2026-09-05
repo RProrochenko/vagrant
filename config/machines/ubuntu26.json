@@ -1,0 +1,38 @@
+{
+  "os": "ubuntu26",
+  "name": "ubuntu26",
+  "hostname": "ubuntu-dev",
+  "autostart": false,
+  "primary": true,
+  "synced_folder": true,
+  "ssh": {
+    "username": "user",
+    "private_key_path": "ssh/private-key",
+    "public_key_path": "ssh/private-key.pub",
+    "insert_key": false
+  },
+  "box": {
+    "name": "ubuntu-26.04-rpr-virtualbox",
+    "resources": {
+      "cpus": 4,
+      "memory": 8192
+    }
+  },
+  "build": {
+    "vm_name": "ubuntu-26.04-rprorochenko-base",
+    "resources": {
+      "cpus": 2,
+      "memory": 4096
+    },
+    "output_directory": "builds/packer-ubuntu"
+  },
+  "provision": {
+    "install_docker": true,
+    "packages": [
+      "tree",
+      "unzip",
+      "virtualbox-guest-utils",
+      "zip"
+    ]
+  }
+}

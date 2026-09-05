@@ -1,0 +1,37 @@
+{
+  "os": "rocky10",
+  "name": "rocky",
+  "hostname": "rocky-dev",
+  "autostart": false,
+  "primary": false,
+  "synced_folder": false,
+  "ssh": {
+    "username": "user",
+    "private_key_path": "ssh/private-key",
+    "public_key_path": "ssh/private-key.pub",
+    "insert_key": false
+  },
+  "box": {
+    "name": "rocky-10-rpr-virtualbox",
+    "resources": {
+      "cpus": 2,
+      "memory": 4096
+    }
+  },
+  "build": {
+    "vm_name": "rocky-10-rprorochenko-base",
+    "resources": {
+      "cpus": 2,
+      "memory": 4096
+    },
+    "output_directory": "builds/packer-rocky"
+  },
+  "provision": {
+    "install_docker": true,
+    "packages": [
+      "tree",
+      "unzip",
+      "zip"
+    ]
+  }
+}
