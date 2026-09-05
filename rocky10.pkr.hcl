@@ -75,10 +75,12 @@ source "virtualbox-iso" "rocky10" {
   boot_wait = "5s"
 
   boot_command = [
-    "<tab><wait>",
-    " inst.text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/rocky.ks<enter>"
+    "<up>",
+    "e",
+    "<down><down><end><wait>",
+    " inst.k inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/rocky.ks",
+    "<f10>"
   ]
-
   shutdown_command = "sudo shutdown -P now"
 }
 
